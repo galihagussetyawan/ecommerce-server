@@ -1,13 +1,19 @@
 package com.server.services;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.server.domain.Category;
 import com.server.domain.Product;
 
 public interface ProductService {
     Product saveProduct(Product product);
 
-    Product getProduct(String name);
+    Optional<Product> getProduct(Long id);
 
     List<Product> getProducts();
+
+    List<Product> getProductByCategory(Category category);
+
+    void addCategoryToProduct(String productName, String categoryName);
 }
