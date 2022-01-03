@@ -46,7 +46,7 @@ public class CartServiceImpl implements CartService {
                 .product(product)
                 .quantity(quantity)
                 .amount(product.getPrice() * quantity)
-                .checkout(true)
+                .checkout(false)
                 .build();
 
         return cartRepository.save(cart);

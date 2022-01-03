@@ -1,17 +1,11 @@
 package com.server.domain;
 
-import java.util.List;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,23 +13,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "orders")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class Order {
+public class UserShipping {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String status;
-    private long amount;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "applications", "hibernateLazyInitializer" })
-    private List<Cart> carts;
+    private String userShippingName;
+    private String userShippingStreet1;
+    private String userShippingStreet2;
+    private String userShippingCity;
+    private String userShippingState;
+    private String userShippingCountry;
+    private String userShippingZipcode;
+    private boolean userShippingDefault;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
