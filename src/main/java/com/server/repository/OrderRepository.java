@@ -2,7 +2,6 @@ package com.server.repository;
 
 import java.util.List;
 
-import com.server.domain.Cart;
 import com.server.domain.Order;
 import com.server.domain.User;
 

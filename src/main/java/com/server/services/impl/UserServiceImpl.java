@@ -29,6 +29,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Override
+    public User getUserById(int id) {
+        return userRepository.findById((long) id).orElse(null);
+    }
+
+    public User getUser(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public User saveUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -43,10 +52,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = userRepository.findByUsername(username);
         Role role = roleRepository.findByName(roleName);
         user.getRoles().add(role);
-    }
-
-    public User getUser(String username) {
-        return userRepository.findByUsername(username);
     }
 
     @Override

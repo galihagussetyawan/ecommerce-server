@@ -9,6 +9,7 @@ import com.server.domain.Category;
 import com.server.domain.Product;
 import com.server.services.ProductService;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin(origins = "http://localhost:3000")
 @Slf4j
 public class ProductResource {
+
     private final ProductService productService;
 
     @GetMapping("/products")

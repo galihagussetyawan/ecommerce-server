@@ -2,9 +2,8 @@ package com.server.api;
 
 import com.server.domain.Order;
 import com.server.domain.User;
-import com.server.repository.OrderRepository;
-import com.server.repository.UserRepository;
 import com.server.services.OrderService;
+import com.server.services.UserService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +22,13 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "http://localhost:3000")
 public class CheckoutResource {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final OrderService orderService;
 
     @PostMapping("/checkout/{id}")
     public ResponseEntity<Order> checkout(@PathVariable("id") int id) {
 
-        User user = userRepository.findById((long) id).orElse(null);
+        User user = userService.getUserById(id);
 
         Order order = orderService.createOrder(user);
 
@@ -38,7 +37,7 @@ public class CheckoutResource {
 
     @GetMapping("/order/{id}")
     public ResponseEntity<?> getOrderByUser(@PathVariable("id") int id) {
-        User user = userRepository.findById((long) id).orElse(null);
+        User user = userService.getUserById(id);
 
         return ResponseEntity.ok().body(orderService.getOrderByUser(user));
     }
