@@ -9,7 +9,6 @@ import com.server.domain.Category;
 import com.server.domain.Product;
 import com.server.services.ProductService;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -65,12 +64,13 @@ public class ProductResource {
     }
 
     @GetMapping("/product/{id}")
-    @PostAuthorize("hasAuthority('BUYER')")
+    // @PostAuthorize("hasAuthority('BUYER')")
+    @PostAuthorize("permitAll()")
     public ResponseEntity<Optional<Product>> getProduct(@PathVariable("id") Long id) {
         Optional<Product> responseData = productService.getProduct(id);
 
         try {
-            if (responseData.isEmpty()) {
+            if (responseData == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
