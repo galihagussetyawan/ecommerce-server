@@ -29,6 +29,7 @@ public class Cart {
     private int quantity;
     private long amount;
     private boolean checkout;
+    private boolean open;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JsonIgnoreProperties(value = { "applications", "hibernateLazyInitializer" })

@@ -3,7 +3,6 @@ package com.server;
 import java.util.ArrayList;
 
 import com.server.auditable.AuditorAwareImpl;
-import com.server.domain.Cart;
 import com.server.domain.Category;
 import com.server.domain.Product;
 import com.server.domain.Role;
@@ -111,8 +110,6 @@ public class ServerApplication {
 		return args -> {
 			cartService.addToCart(1, 1, 5);
 			cartService.addToCart(1, 2, 10);
-
-			// cartService.getCartByUser(1);
 		};
 	}
 }

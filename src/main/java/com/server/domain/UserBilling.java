@@ -1,9 +1,11 @@
 package com.server.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,4 +30,7 @@ public class UserBilling {
     private String userBillingState;
     private String userBillingCountry;
     private String userBillingZipcode;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private UserPayment userPayment;
 }

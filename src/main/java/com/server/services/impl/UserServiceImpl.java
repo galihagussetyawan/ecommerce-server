@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.server.domain.Role;
 import com.server.domain.User;
+import com.server.domain.UserShipping;
 import com.server.repository.RoleRepository;
 import com.server.repository.UserRepository;
 import com.server.services.UserService;
@@ -82,5 +83,4 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
                 authorities);
     }
-
 }

@@ -34,7 +34,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         @Override
         public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
                         throws AuthenticationException {
-                // TODO Auto-generated method stub
+
                 String username = request.getParameter("username");
                 String password = request.getParameter("password");
                 log.info("Username is : {}", username);
@@ -48,10 +48,12 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         @Override
         protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                         FilterChain chain, Authentication authentication) throws IOException, ServletException {
-                // TODO Auto-generated method stub
+
                 org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) authentication
                                 .getPrincipal();
+
                 Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+
                 String access_token = JWT.create().withSubject(user.getUsername())
                                 .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
                                 .withIssuer(request.getRequestURL().toString())

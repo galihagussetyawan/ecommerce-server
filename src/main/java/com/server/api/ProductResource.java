@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -63,10 +64,10 @@ public class ProductResource {
                 .body(productService.saveProduct(product));
     }
 
-    @GetMapping("/product/{id}")
+    @GetMapping("/product")
     // @PostAuthorize("hasAuthority('BUYER')")
     @PostAuthorize("permitAll()")
-    public ResponseEntity<Optional<Product>> getProduct(@PathVariable("id") Long id) {
+    public ResponseEntity<Optional<Product>> getProduct(@RequestParam Long id) {
         Optional<Product> responseData = productService.getProduct(id);
 
         try {
@@ -80,7 +81,7 @@ public class ProductResource {
         }
     }
 
-    @GetMapping("/category/{id}")
+    @GetMapping("/products/category/{id}")
     @PostAuthorize("permitAll()")
     public ResponseEntity<List<Product>> getProductByCategory(@PathVariable("id") Category category) {
         log.info("get product by category: {}", category.getName());
@@ -95,6 +96,14 @@ public class ProductResource {
         return ResponseEntity
                 .ok()
                 .body(products);
+    }
+
+    @GetMapping("/product/created/{username}")
+    public ResponseEntity getProductBycreatedBy(@PathVariable("username") String username) {
+
+        List<Product> products = productService.getProductBycreatedBy(username);
+
+        return ResponseEntity.ok().body(products);
     }
 }
 

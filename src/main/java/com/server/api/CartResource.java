@@ -3,7 +3,9 @@ package com.server.api;
 import java.util.List;
 
 import com.server.domain.Cart;
+import com.server.domain.User;
 import com.server.services.CartService;
+import com.server.services.UserService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +32,13 @@ import lombok.extern.slf4j.Slf4j;
 public class CartResource {
 
     private final CartService cartService;
+    private final UserService userService;
 
     @PostAuthorize("permitAll()")
-    @GetMapping("/cart/{id}")
+    @GetMapping("/cart/user/{id}")
     public ResponseEntity<List<Cart>> getCartByUser(@PathVariable("id") int userId) {
-        List<Cart> response = cartService.getCartByUser(userId);
+        User user = userService.getUserById(userId);
+        List<Cart> response = cartService.getCartByUserAndOpenIsTrue(user);
 
         try {
             if (response.isEmpty()) {
@@ -72,14 +76,15 @@ public class CartResource {
     @PutMapping("/cart/update")
     @PostAuthorize("permitAll()")
     public ResponseEntity<?> updateAddToCart(@RequestBody UpdateCartRequest updateCartRequest) {
-        Cart response = cartService.updateAddToCart(updateCartRequest.getId(), updateCartRequest.getQuantity());
+        Cart response = cartService.updateAddToCart(updateCartRequest.getId(), updateCartRequest.getQuantity(),
+                updateCartRequest.isCheckout());
 
         return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("/cart/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") int id) {
-        cartService.delete(id);
+        cartService.deleteById(id);
 
         return ResponseEntity.noContent().build();
     }
@@ -96,4 +101,5 @@ class CartRequest {
 class UpdateCartRequest {
     private int id;
     private int quantity;
+    private boolean isCheckout;
 }

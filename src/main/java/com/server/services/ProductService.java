@@ -15,5 +15,7 @@ public interface ProductService {
 
     List<Product> getProductByCategory(Category category);
 
+    List<Product> getProductBycreatedBy(String createdBy);
+
     void addCategoryToProduct(String productName, String categoryName);
 }

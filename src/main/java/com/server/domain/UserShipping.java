@@ -29,7 +29,7 @@ public class UserShipping {
     private String userShippingCity;
     private String userShippingState;
     private String userShippingCountry;
-    private String userShippingZipcode;
+    private String userShippingZipCode;
     private boolean userShippingDefault;
 
     @ManyToOne(fetch = FetchType.LAZY)

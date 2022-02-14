@@ -23,13 +23,13 @@ public class ShippingAddress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ShippingAddressName;
-    private String ShippingAddressStreet1;
-    private String ShippingAddressStreet2;
-    private String ShippingAddressCity;
-    private String ShippingAddressState;
-    private String ShippingAddressCountry;
-    private String ShippingAddressZipcode;
+    private String shippingAddressName;
+    private String shippingAddressStreet1;
+    private String shippingAddressStreet2;
+    private String shippingAddressCity;
+    private String shippingAddressState;
+    private String shippingAddressCountry;
+    private String shippingAddressZipCode;
 
     @OneToOne(fetch = FetchType.LAZY)
     private Order order;

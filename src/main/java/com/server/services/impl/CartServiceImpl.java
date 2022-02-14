@@ -35,6 +35,16 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public List<Cart> getCartByUserAndCheckoutIsTrue(User user) {
+        return cartRepository.findByUserAndCheckoutTrue(user);
+    }
+
+    @Override
+    public List<Cart> getCartByUserAndOpenIsTrue(User user) {
+        return cartRepository.findByUserAndOpenIsTrue(user);
+    }
+
+    @Override
     public Cart addToCart(int userId, int productId, int quantity) {
         log.info("userId : {}", userId);
 
@@ -47,13 +57,14 @@ public class CartServiceImpl implements CartService {
                 .quantity(quantity)
                 .amount(product.getPrice() * quantity)
                 .checkout(true)
+                .open(true)
                 .build();
 
         return cartRepository.save(cart);
     }
 
     @Override
-    public Cart updateAddToCart(int id, int quantity) {
+    public Cart updateAddToCart(int id, int quantity, boolean isCheckout) {
         Cart cart = cartRepository.findById((long) id).get();
 
         if (cart.getProduct().getStock() < 1) {
@@ -62,6 +73,7 @@ public class CartServiceImpl implements CartService {
             throw new IllegalArgumentException("Only " + cart.getProduct().getStock() + " left in stock");
         }
 
+        cart.setCheckout(isCheckout);
         cart.setQuantity(quantity);
         cart.setAmount(cart.getProduct().getPrice() * quantity);
 
@@ -69,7 +81,15 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void delete(int id) {
+    public void deleteById(int id) {
         cartRepository.deleteById((long) id);
+    }
+
+    @Override
+    public void clearCart(List<Cart> carts) {
+
+        for (Cart cartItem : carts) {
+            cartItem.setOpen(false);
+        }
     }
 }

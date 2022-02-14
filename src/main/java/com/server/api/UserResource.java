@@ -1,19 +1,25 @@
 package com.server.api;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.server.DTO.UserDto;
 import com.server.domain.Role;
+import com.server.domain.ShippingAddress;
 import com.server.domain.User;
+import com.server.domain.UserShipping;
 import com.server.services.UserService;
+import com.server.services.UserShippingService;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserResource {
     private final UserService userService;
+    private final UserShippingService userShippingService;
     private final ModelMapper modelMapper;
 
     @GetMapping("/users")
@@ -47,9 +54,10 @@ public class UserResource {
                 .body(response);
     }
 
-    @PostMapping("/user/save")
-    public ResponseEntity<User> saveUser(@RequestBody User user) {
-        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/user/save").toUriString());
+    @PostMapping("/user/create")
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        URI uri = URI
+                .create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/user/create").toUriString());
         return ResponseEntity
                 .created(uri)
                 .body(userService.saveUser(user));
@@ -70,6 +78,40 @@ public class UserResource {
                 .ok()
                 .build();
     }
+
+    // user shipping
+    @PostMapping("/user/shipping")
+    public ResponseEntity<?> addUserShipping(@RequestBody UserShipping userShipping, Principal principal) {
+        User user = userService.getUser(principal.getName());
+        userShippingService.addUserShipping(
+                user,
+                userShipping.getUserShippingStreet1(),
+                userShipping.getUserShippingStreet2(),
+                userShipping.getUserShippingCity(),
+                userShipping.getUserShippingState(),
+                userShipping.getUserShippingCountry(),
+                userShipping.getUserShippingZipCode(),
+                userShipping.isUserShippingDefault());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("user shipping successfully created");
+    }
+
+    @PutMapping("/user/shipping")
+    public ResponseEntity<UserShipping> updateUserShipping(@RequestBody UserShipping userShipping) {
+
+        UserShipping response = userShippingService.updateUserShipping(
+                userShipping.getId(),
+                userShipping.getUserShippingStreet1(),
+                userShipping.getUserShippingStreet2(),
+                userShipping.getUserShippingCity(),
+                userShipping.getUserShippingState(),
+                userShipping.getUserShippingCountry(),
+                userShipping.getUserShippingZipCode(),
+                userShipping.isUserShippingDefault());
+
+        return ResponseEntity.ok(response);
+    }
+
 }
 
 @Data

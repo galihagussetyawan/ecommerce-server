@@ -34,12 +34,15 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // TODO Auto-generated method stub
-        if (request.getServletPath().equals("/api/login")) {
+
+        if (request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/refreshtoken")) {
             filterChain.doFilter(request, response);
         } else {
+
             String authorizationHeader = request.getHeader(AUTHORIZATION);
+
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+
                 try {
                     String token = authorizationHeader.substring("Bearer ".length());
 
@@ -51,6 +54,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
 
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
                     stream(roles).forEach(role -> {
                         authorities.add(new SimpleGrantedAuthority(role));
                     });
@@ -62,7 +66,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
 
                 } catch (Exception e) {
-                    // TODO: handle exception
+
                     log.error("Error logging in: {}", e.getMessage());
                     response.setHeader("error", e.getMessage());
 
@@ -72,6 +76,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
                     new ObjectMapper().writeValue(response.getOutputStream(), error);
                 }
+
             } else {
                 filterChain.doFilter(request, response);
             }

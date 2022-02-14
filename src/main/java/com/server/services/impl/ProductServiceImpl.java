@@ -51,4 +51,9 @@ public class ProductServiceImpl implements ProductService {
 
         product.getCategories().add(category);
     }
+
+    @Override
+    public List<Product> getProductBycreatedBy(String createdBy) {
+        return productRepository.findBycreatedBy(createdBy);
+    }
 }

@@ -1,21 +1,23 @@
 package com.server.services.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
+import com.server.domain.BillingAddress;
 import com.server.domain.Cart;
 import com.server.domain.Order;
+import com.server.domain.Payment;
 import com.server.domain.Product;
+import com.server.domain.ShippingAddress;
 import com.server.domain.User;
 import com.server.repository.CartRepository;
 import com.server.repository.OrderRepository;
 import com.server.services.OrderService;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,16 +32,21 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
 
     @Override
-    public synchronized Order createOrder(User user) {
-        List<Cart> carts = cartRepository.findCartByUser(user);
+    public synchronized Order createOrder(User user, List<Cart> carts, ShippingAddress shippingAddress) {
+
         List<Cart> listCart = new ArrayList<>();
+
+        if (shippingAddress.getShippingAddressStreet1().isEmpty()
+                || shippingAddress.getShippingAddressCity().isEmpty()
+                || shippingAddress.getShippingAddressState().isEmpty()
+                || shippingAddress.getShippingAddressCountry().isEmpty()
+                || shippingAddress.getShippingAddressZipCode().isEmpty()) {
+
+            throw new IllegalArgumentException("shipping address must be complete");
+        }
 
         int cartTotal = 0;
         for (Cart cart : carts) {
-            if (!cart.isCheckout()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not product on checkout");
-            }
-
             Product product = cart.getProduct();
             product.setStock(product.getStock() - cart.getQuantity());
             cartTotal += cart.getAmount();
@@ -47,6 +54,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order order = Order.builder()
+                .shippingAddress(shippingAddress)
+                .orderDate(Calendar.getInstance().getTime())
                 .status("created")
                 .amount(cartTotal)
                 .carts(listCart)
