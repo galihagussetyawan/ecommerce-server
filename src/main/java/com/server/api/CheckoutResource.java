@@ -16,6 +16,7 @@ import com.server.services.UserShippingService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +40,8 @@ public class CheckoutResource {
     private final CartService cartService;
 
     @GetMapping("/checkout")
+    // @PostAuthorize("hasAnyAuthority('BUYER', 'SELLER')")
+    @PostAuthorize("hasAuthority('SELLER')")
     public ResponseEntity<?> getOrderByUser(Principal principal) {
         User user = userService.getUser(principal.getName());
 

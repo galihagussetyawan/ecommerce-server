@@ -30,52 +30,87 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = { ProductResource.class })
 public class ProductResourceTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+        @Autowired
+        private WebApplicationContext webApplicationContext;
 
-    @MockBean
-    private ProductService productService;
+        @MockBean
+        private ProductService productService;
 
-    Product product1 = new Product(1L, "Manjaro Gnome 6", "jancokk", 1000000, 10, 5, new ArrayList<>());
-    Product product2 = new Product(2L, "Manjaro Gnome 5", "jancokk", 1000000, 10, 5, new ArrayList<>());
-    Product product3 = new Product(3L, "Manjaro Gnome 5", "jancokk", 1000000, 10, 5, new ArrayList<>());
+        Product product1 = Product.builder()
+                        .name("Lenovo Ideapad Slim 5")
+                        .description("desc")
+                        .price(5000)
+                        .size(8)
+                        .stock(10)
+                        .build();
 
-    List<Product> products = new ArrayList<>(Arrays.asList(product1, product2,
-            product3));
+        Product product2 = Product.builder()
+                        .name("Manjaro Gnome")
+                        .description("desc")
+                        .price(5000)
+                        .size(8)
+                        .stock(10)
+                        .build();
 
-    @BeforeEach
-    void setup() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
-    }
+        Product product3 = Product.builder()
+                        .name("Masker medical anti corona")
+                        .description("desc")
+                        .price(5000)
+                        .size(8)
+                        .stock(6)
+                        .build();
 
-    @Test
-    void testGetProduct() throws Exception {
-        Mockito.when(productService.getProduct(1L)).thenReturn(Optional.ofNullable(product1));
+        List<Product> products = new ArrayList<>(Arrays.asList(product1, product2,
+                        product3));
 
-        this.mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/product/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.valueOf(productService.getProduct(1L))))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
+        @BeforeEach
+        void setup() throws Exception {
+                mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
+        }
 
-    @Test
-    void testGetProducts() throws Exception {
-        Mockito.when(productService.getProducts()).thenReturn(products);
+        @Test
+        void testGetProduct() throws Exception {
+                Mockito.when(productService.getProduct(1L)).thenReturn(Optional.ofNullable(product1));
 
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(String.valueOf(productService.getProducts())))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
+                this.mockMvc.perform(
+                                MockMvcRequestBuilders
+                                                .get("/api/product")
+                                                .param("id", "1")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(String.valueOf(productService.getProduct(1L))))
+                                .andExpect(status().isOk())
+                                .andDo(print());
+        }
 
-    @Test
-    void testGetProductsByCategory() throws Exception {
+        @Test
+        void testGetProductNotFound() throws Exception {
+                // Mockito.when(productService.getProduct(1L)).thenReturn(Optional.ofNullable(product1));
+                Mockito.when(productService.getProduct(10L)).thenReturn(null);
 
-    }
+                this.mockMvc.perform(
+                                MockMvcRequestBuilders
+                                                .get("/api/product")
+                                                .queryParam("id", "10"))
+                                .andExpect(status().isNotFound())
+                                .andDo(print());
+        }
+
+        @Test
+        void testGetProducts() throws Exception {
+                Mockito.when(productService.getProducts()).thenReturn(products);
+
+                this.mockMvc.perform(MockMvcRequestBuilders.get("/api/products")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(String.valueOf(productService.getProducts())))
+                                .andExpect(status().isOk())
+                                .andDo(print());
+        }
+
+        @Test
+        void testGetProductsByCategory() throws Exception {
+
+        }
 }

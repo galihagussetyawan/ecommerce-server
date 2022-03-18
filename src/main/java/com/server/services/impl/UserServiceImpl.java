@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.server.domain.Role;
 import com.server.domain.User;
-import com.server.domain.UserShipping;
+import com.server.domain.DetailContact;
 import com.server.repository.RoleRepository;
+import com.server.repository.UserDetailRepository;
 import com.server.repository.UserRepository;
 import com.server.services.UserService;
 
@@ -26,9 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @Slf4j
 public class UserServiceImpl implements UserService, UserDetailsService {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserDetailRepository userDetailRepository;
 
     @Override
     public User getUserById(int id) {
@@ -37,6 +40,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     public User getUser(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     public User saveUser(User user) {
@@ -60,10 +68,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findByRoles(role);
     }
 
-    public List<User> getUsers() {
-        return userRepository.findAll();
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
@@ -82,5 +86,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
                 authorities);
+    }
+
+    @Override
+    public void addUserDetail(User user, DetailContact userDetailBody) {
+
+        DetailContact userDetail = DetailContact.builder()
+                .firstname(userDetailBody.getFirstname())
+                .lastname(userDetailBody.getLastname())
+                .birth(userDetailBody.getBirth())
+                .address1(userDetailBody.getAddress1())
+                .address2(userDetailBody.getAddress2())
+                .city(userDetailBody.getCity())
+                .state(userDetailBody.getState())
+                .country(userDetailBody.getCountry())
+                .phone(userDetailBody.getPhone())
+                .email(userDetailBody.getEmail())
+                .build();
+
+        userDetailRepository.save(userDetail);
+        user.setDetailContact(userDetail);
+        userRepository.save(user);
     }
 }

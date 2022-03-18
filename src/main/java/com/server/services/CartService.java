@@ -6,15 +6,15 @@ import com.server.domain.Cart;
 import com.server.domain.User;
 
 public interface CartService {
-    List<Cart> getCartByUser(int userId);
+    List<Cart> getCartByUser(User user);
 
     List<Cart> getCartByUserAndCheckoutIsTrue(User user);
 
     List<Cart> getCartByUserAndOpenIsTrue(User user);
 
-    Cart addToCart(int userId, int productId, int quantity);
+    Cart addToCart(String username, int productId, int quantity);
 
-    Cart updateAddToCart(int id, int quantity, boolean isCheckout);
+    Cart updateAddToCart(int id, int quantity, boolean checkout);
 
     void deleteById(int id);
 

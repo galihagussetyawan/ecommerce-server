@@ -3,13 +3,18 @@ package com.server.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.server.auditable.Auditable;
 
 import lombok.AllArgsConstructor;
@@ -34,6 +39,13 @@ public class Product extends Auditable<String> {
     private int size;
     private int stock;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<Category> categories = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Image> images = new ArrayList<>();
+
+    @JsonManagedReference
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Store store;
 }

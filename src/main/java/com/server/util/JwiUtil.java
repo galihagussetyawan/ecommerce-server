@@ -2,15 +2,11 @@ package com.server.util;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -31,10 +27,12 @@ public class JwiUtil {
     public String doGenerateToken(UserDetails user) {
 
         return JWT.create().withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
                 .withClaim("roles",
                         user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
+
+        // 30 * 60 * 1000
     }
 
     public String doGenerateRefreshToken(UserDetails user) {
@@ -42,6 +40,8 @@ public class JwiUtil {
         return JWT.create().withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 60 * 1000))
                 .sign(algorithm);
+
+        // 10 * 60 * 60 * 1000
     }
 
     public String getUsernameFromToken(UserDetails user) {

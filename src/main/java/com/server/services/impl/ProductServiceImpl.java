@@ -45,11 +45,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void addCategoryToProduct(String productName, String categoryName) {
-        Product product = productRepository.findByName(productName);
+    public void addCategoryToProduct(int productId, String categoryName) {
+        Product product = productRepository.findById((long) productId).get();
         Category category = categoryRepository.findByName(categoryName);
 
         product.getCategories().add(category);
+
+        productRepository.save(product);
     }
 
     @Override

@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 
 import com.server.auditable.Auditable;
 
@@ -31,10 +32,14 @@ public class User extends Auditable<String> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private String username;
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles = new ArrayList<Role>();
+
+    @OneToOne(fetch = FetchType.EAGER)
+    private DetailContact detailContact;
 }

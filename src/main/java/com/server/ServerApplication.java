@@ -1,15 +1,23 @@
 package com.server;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import javax.annotation.Resource;
 
 import com.server.auditable.AuditorAwareImpl;
 import com.server.domain.Category;
 import com.server.domain.Product;
 import com.server.domain.Role;
+import com.server.domain.Store;
 import com.server.domain.User;
+import com.server.domain.DetailContact;
 import com.server.services.CartService;
 import com.server.services.CategoryService;
+import com.server.services.ImageService;
 import com.server.services.ProductService;
+import com.server.services.StoreService;
 import com.server.services.UserService;
 
 import org.modelmapper.ModelMapper;
@@ -49,27 +57,94 @@ public class ServerApplication {
 	CommandLineRunner run(UserService userService) {
 		return args -> {
 			userService.saveRole(new Role(null, "BUYER"));
-			userService.saveRole(new Role(null, "SELLER"));
 			userService.saveRole(new Role(null, "ADMIN"));
+			userService.saveRole(new Role(null, "SELLER"));
 
-			userService.saveUser(new User(null, "galih", "galihagus", "admin", new ArrayList<>()));
-			userService.saveUser(new User(null, "indah", "indahsania", "admin", new ArrayList<>()));
-			userService.saveUser(new User(null, "eva", "evadwi", "admin", new ArrayList<>()));
+			User galih = User.builder()
+					.name("galih")
+					.username("galihagus")
+					.password("admin")
+					.build();
 
-			userService.addRoleToUser("galihagus", "SELLER");
+			User indah = User.builder()
+					.name("indah")
+					.username("indahsania")
+					.password("admin")
+					.build();
+
+			User eva = User.builder()
+					.name("evah")
+					.username("evadwi")
+					.password("admin")
+					.build();
+
+			// userService.saveUser(new User(null, "galih", "galihagus", "admin", new
+			// ArrayList<>()));
+			// userService.saveUser(new User(null, "indah", "indahsania", "admin", new
+			// ArrayList<>()));
+			// userService.saveUser(new User(null, "eva", "evadwi", "admin", new
+			// ArrayList<>()));
+
+			userService.saveUser(galih);
+			userService.saveUser(indah);
+			userService.saveUser(eva);
+
+			userService.addRoleToUser("galihagus", "BUYER");
 			userService.addRoleToUser("indahsania", "BUYER");
 			userService.addRoleToUser("evadwi", "BUYER");
+
+			// // create data user detail
+			User user = userService.getUser("galihagus");
+			String birthDate = "13/08/1999";
+			Date date = new SimpleDateFormat("dd/MM/yyyy").parse(birthDate);
+
+			DetailContact userDetail = DetailContact.builder()
+					.firstname("galih")
+					.lastname("setyawan")
+					.birth(date)
+					.address1("Jatiprahu Karangan Trenggalek")
+					.city("trenggalek")
+					.state("Jawa Timur")
+					.phone("085856215653")
+					.email("setyawan.galih11@gmail.com")
+					.build();
+
+			userService.addUserDetail(user, userDetail);
 		};
 	}
 
-	@Bean
+	// @Bean
 	CommandLineRunner init(ProductService productService) {
-		return args -> {
-			productService
-					.saveProduct(new Product(null, "Lenovo Ideapad Slim 5", "desc", 5000, 8, 10, new ArrayList<>()));
 
-			productService
-					.saveProduct(new Product(null, "Manjaro Gnome", "desc", 5000, 8, 10, new ArrayList<>()));
+		Product product1 = Product.builder()
+				.name("Lenovo Ideapad Slim 5")
+				.description("desc")
+				.price(5000)
+				.size(8)
+				.stock(10)
+				.build();
+
+		Product product2 = Product.builder()
+				.name("Manjaro Gnome")
+				.description("desc")
+				.price(5000)
+				.size(8)
+				.stock(10)
+				.build();
+
+		Product product3 = Product.builder()
+				.name("Masker medical anti corona")
+				.description("desc")
+				.price(5000)
+				.size(8)
+				.stock(6)
+				.build();
+
+		return args -> {
+
+			productService.saveProduct(product1);
+			productService.saveProduct(product2);
+			productService.saveProduct(product3);
 		};
 	}
 
@@ -97,19 +172,37 @@ public class ServerApplication {
 		};
 	}
 
-	@Bean
-	CommandLineRunner printTest(ProductService productService) {
-		return args -> {
-			productService.addCategoryToProduct("Lenovo Ideapad Slim 5", "Elektronik");
-		};
-	}
+	// @Bean
+	// CommandLineRunner printTest(ProductService productService) {
+	// return args -> {
+	// productService.addCategoryToProduct("Lenovo Ideapad Slim 5", "Elektronik");
+	// };
+	// }
 
-	@Bean
-	CommandLineRunner testCart(CartService cartService) {
+	// @Bean
+	// CommandLineRunner testCart(CartService cartService) {
+
+	// return args -> {
+	// cartService.addToCart(1, 1, 5);
+	// cartService.addToCart(1, 2, 10);
+	// cartService.addToCart(1, 3, 2);
+	// };
+	// }
+
+	// @Bean
+	CommandLineRunner createStore(StoreService storeService, UserService userService) {
 
 		return args -> {
-			cartService.addToCart(1, 1, 5);
-			cartService.addToCart(1, 2, 10);
+
+			User user = userService.getUser("galihagus");
+			Store store = Store.builder()
+					.name("Alienx Store")
+					.username("alienxstore")
+					.user(user)
+					.build();
+
+			storeService.createStore(user, store);
+
 		};
 	}
 }

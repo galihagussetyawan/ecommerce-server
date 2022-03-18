@@ -18,7 +18,9 @@ import com.server.domain.User;
 import com.server.services.UserService;
 import com.server.util.JwiUtil;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -39,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api")
 public class AuthResource {
 
@@ -47,7 +51,6 @@ public class AuthResource {
         private final JwiUtil jwiUtil;
 
         @PostMapping("/login")
-        @CrossOrigin(origins = "http://localhost:3000")
         public ResponseEntity<?> authentication(@RequestBody AuthRequest authRequest) {
 
                 // UsernamePasswordAuthenticationToken authenticationToken = new
@@ -116,16 +119,16 @@ public class AuthResource {
                 try {
                         String authorizationHeader = request.getHeader(AUTHORIZATION);
 
-                        String refreshToken = authorizationHeader.substring("Bearer ".length());
+                        String authorizationToken = authorizationHeader.substring("Bearer ".length());
 
                         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
                         JWTVerifier verifier = JWT.require(algorithm).build();
-                        DecodedJWT decodedJWT = verifier.verify(refreshToken);
+                        DecodedJWT decodedJWT = verifier.verify(authorizationToken);
 
                         String username = decodedJWT.getSubject();
                         User user = userService.getUser(username);
                         List<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-
+                        Date expired = decodedJWT.getExpiresAt();
                         String access_token = JWT.create().withSubject(user.getUsername())
                                         .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
                                         .withIssuer(request.getRequestURL().toString())
@@ -134,18 +137,43 @@ public class AuthResource {
                                                                         .collect(Collectors.toList()))
                                         .sign(algorithm);
 
+                        String refresh_token = JWT.create().withSubject(user.getUsername())
+                                        .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 60 * 1000))
+                                        .sign(algorithm);
+
                         newToken.put("username", user.getUsername());
                         newToken.put("roles", roles);
                         newToken.put("access_token", access_token);
-                        newToken.put("refresh_token", refreshToken);
+                        newToken.put("refresh_token", refresh_token);
+                        newToken.put("expired", expired);
 
                 } catch (Exception e) {
 
                         log.error("Error logging in: {}", e.getMessage());
-                        response.setHeader("error", e.getMessage());
+
+                        return ResponseEntity.status(HttpStatus.LOCKED).body(e.getMessage());
                 }
 
                 return ResponseEntity.ok().body(newToken);
+        }
+
+        // authentication USER ROLES
+        @GetMapping("/authentication/public")
+        @PostAuthorize("permitAll()")
+        public ResponseEntity<String> isAuthenticationPublic() {
+                return ResponseEntity.ok().body("Public");
+        }
+
+        @GetMapping("/authentication/buyer")
+        @PostAuthorize("hasAuthority('BUYER')")
+        public ResponseEntity<String> isAuthenticationBuyer() {
+                return ResponseEntity.ok().body("Buyer");
+        }
+
+        @GetMapping("/authentication/seller")
+        @PostAuthorize("hasAuthority('SELLER')")
+        public ResponseEntity<String> isAuthenticationSeller() {
+                return ResponseEntity.ok().body("Seller");
         }
 }
 

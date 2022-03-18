@@ -2,7 +2,10 @@ package com.server.api;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.server.DTO.UserDto;
@@ -10,12 +13,15 @@ import com.server.domain.Role;
 import com.server.domain.ShippingAddress;
 import com.server.domain.User;
 import com.server.domain.UserShipping;
+import com.server.pojo.response.UserResponse;
 import com.server.services.UserService;
 import com.server.services.UserShippingService;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,14 +37,49 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserResource {
+
     private final UserService userService;
     private final UserShippingService userShippingService;
     private final ModelMapper modelMapper;
 
+    @GetMapping("/user")
+    @PostAuthorize("hasAnyAuthority('BUYER', 'SELLER')")
+    public ResponseEntity<?> getUser(Principal principal) {
+
+        User user = userService.getUser(principal.getName());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", user.getId());
+        response.put("username", user.getUsername());
+        response.put("name", user.getName());
+        response.put("roles", user.getRoles().stream().map(Role::getName));
+        response.put("contact", user.getDetailContact());
+
+        return ResponseEntity.ok().body(response);
+    }
+
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.ok().body(userService.getUsers());
+    @PostAuthorize("permitAll()")
+    public ResponseEntity<?> getUsers() {
+
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> response = new ArrayList<>();
+
+        for (User user : users) {
+            UserResponse userSet = UserResponse.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .name(user.getName())
+                    .roles(user.getRoles().stream().map(Role::getName))
+                    .userDetail(user.getDetailContact())
+                    .build();
+
+            response.add(userSet);
+        }
+
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/role/{id}")
@@ -71,13 +112,13 @@ public class UserResource {
                 .body(userService.saveRole(role));
     }
 
-    @PostMapping("/role/addtouser")
-    public ResponseEntity<?> addRoleToUser(@RequestBody RoleToUserForm form) {
-        userService.addRoleToUser(form.getUsername(), form.getRoleName());
-        return ResponseEntity
-                .ok()
-                .build();
-    }
+    // @PostMapping("/role/addtouser")
+    // public ResponseEntity<?> addRoleToUser(@RequestBody RoleToUserForm form) {
+    // userService.addRoleToUser(form.getUsername(), form.getRoleName());
+    // return ResponseEntity
+    // .ok()
+    // .build();
+    // }
 
     // user shipping
     @PostMapping("/user/shipping")

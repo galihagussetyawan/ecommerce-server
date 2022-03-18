@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.server.domain.Role;
 import com.server.domain.User;
+import com.server.domain.DetailContact;
 
 public interface UserService {
     User saveUser(User user);
@@ -14,9 +15,11 @@ public interface UserService {
 
     User getUser(String username);
 
+    List<User> getAllUsers();
+
     User getUserById(int id);
 
     List<User> getUserByRole(Role role);
 
-    List<User> getUsers();
+    void addUserDetail(User user, DetailContact userDetail);
 }

@@ -1,13 +1,20 @@
 package com.server.api;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import com.server.domain.Category;
 import com.server.domain.Product;
+import com.server.domain.Store;
+import com.server.domain.User;
+import com.server.services.CategoryService;
 import com.server.services.ProductService;
+import com.server.services.StoreService;
+import com.server.services.UserService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductResource {
 
     private final ProductService productService;
+    private final UserService userService;
+    private final StoreService storeService;
+    private final CategoryService categoryService;
 
     @GetMapping("/products")
     @PostAuthorize("permitAll()")
@@ -48,16 +58,27 @@ public class ProductResource {
     }
 
     @PostMapping("/product/save")
-    @PostAuthorize("permitAll()")
-    public ResponseEntity<Product> saveProduct(@RequestBody ProductRequest productRequest) {
-
-        Product product = new Product(null, productRequest.getName(), productRequest.getDescription(),
-                productRequest.getPrice(), productRequest.getSize(), productRequest.getStock(), new ArrayList<>());
-
-        log.info("save product : {}", product);
+    @PostAuthorize("hasAuthority('SELLER')")
+    public ResponseEntity<Product> saveProduct(@RequestBody ProductRequest productRequest, Principal principal) {
 
         URI uri = URI
                 .create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/product/save").toUriString());
+
+        User user = userService.getUser(principal.getName());
+        Store store = storeService.getStoreByUser(user);
+        Category category = categoryService.getCategoryByName(productRequest.getCategory());
+
+        Product product = Product.builder()
+                .name(productRequest.getName())
+                .description(productRequest.getDescription())
+                .categories(Arrays.asList(category))
+                .price(productRequest.getPrice())
+                .size(productRequest.getSize())
+                .stock(productRequest.getStock())
+                .store(store)
+                .build();
+
+        log.info("save product : {}", product);
 
         return ResponseEntity
                 .created(uri)
@@ -105,12 +126,18 @@ public class ProductResource {
 
         return ResponseEntity.ok().body(products);
     }
+
+    // @PostMapping("/add-category-to-product")
+    // public ResponseEntity<?> addCategoryToProduct() {
+
+    // }
 }
 
 @Data
 class ProductRequest {
     private String name;
     private String description;
+    private String category;
     private long price;
     private int size;
     private int stock;

@@ -14,10 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,16 +65,22 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
 
-                } catch (Exception e) {
+                } catch (TokenExpiredException ex) {
 
-                    log.error("Error logging in: {}", e.getMessage());
-                    response.setHeader("error", e.getMessage());
+                    // log.error("Error logging in: {}", e.getMessage());
+                    // response.setHeader("error", e.getMessage());
 
-                    Map<String, String> error = new HashMap<>();
-                    error.put("error_message", e.getMessage());
-                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    // Map<String, String> error = new HashMap<>();
+                    // error.put("error_message", e.getMessage());
+                    // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-                    new ObjectMapper().writeValue(response.getOutputStream(), error);
+                    // new ObjectMapper().writeValue(response.getOutputStream(), error);
+
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+                    // response.setStatus(401);
+                    // log.error(ex.getMessage());
+                    // throw new ServletException("token expired");
                 }
 
             } else {

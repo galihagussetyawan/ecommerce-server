@@ -1,10 +1,13 @@
 package com.server.api;
 
+import java.security.Principal;
 import java.util.List;
 
 import com.server.domain.Cart;
+import com.server.domain.Product;
 import com.server.domain.User;
 import com.server.services.CartService;
+import com.server.services.ProductService;
 import com.server.services.UserService;
 
 import org.springframework.http.HttpStatus;
@@ -13,11 +16,11 @@ import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.Data;
@@ -33,66 +36,68 @@ public class CartResource {
 
     private final CartService cartService;
     private final UserService userService;
+    private final ProductService productService;
 
-    @PostAuthorize("permitAll()")
-    @GetMapping("/cart/user/{id}")
-    public ResponseEntity<List<Cart>> getCartByUser(@PathVariable("id") int userId) {
-        User user = userService.getUserById(userId);
-        List<Cart> response = cartService.getCartByUserAndOpenIsTrue(user);
+    @GetMapping("/cart")
+    // @PostAuthorize("hasAnyAuthority('BUYER', 'SELLER')")
+    @PostAuthorize("hasAuthority('BUYER')")
+    public ResponseEntity<?> getCartByUser(Principal principal) {
+
+        User user = userService.getUser(principal.getName());
 
         try {
-            if (response.isEmpty()) {
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(null);
-            }
+            List<Cart> response = cartService.getCartByUserAndOpenIsTrue(user);
 
             return ResponseEntity
                     .ok()
                     .body(response);
+
         } catch (Exception e) {
             return ResponseEntity
-                    .internalServerError()
-                    .body(null);
+                    .badRequest()
+                    .body(e.getMessage());
         }
     }
 
     @PostMapping("/cart/save")
-    public ResponseEntity<?> addToCart(@RequestBody CartRequest cartRequest) {
-        Cart response = cartService.addToCart(cartRequest.getUser(), cartRequest.getProduct(),
-                cartRequest.getQuantity());
+    @PostAuthorize("hasAuthority('BUYER')")
+    public ResponseEntity<?> addToCart(@RequestBody CartRequest cartRequest, Principal principal) {
 
         try {
-            if (response == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-            }
+            Cart response = cartService.addToCart(principal.getName(), cartRequest.getProduct(),
+                    cartRequest.getQuantity());
+
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     @PutMapping("/cart/update")
-    @PostAuthorize("permitAll()")
+    @PostAuthorize("hasAuthority('BUYER')")
     public ResponseEntity<?> updateAddToCart(@RequestBody UpdateCartRequest updateCartRequest) {
+
         Cart response = cartService.updateAddToCart(updateCartRequest.getId(), updateCartRequest.getQuantity(),
                 updateCartRequest.isCheckout());
 
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping("/cart/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") int id) {
+    @DeleteMapping("/cart")
+    @PostAuthorize("hasAuthority('BUYER')")
+    public ResponseEntity<List<Cart>> delete(@RequestParam int id, Principal principal) {
         cartService.deleteById(id);
 
-        return ResponseEntity.noContent().build();
+        User user = userService.getUser(principal.getName());
+        List<Cart> cart = cartService.getCartByUser(user);
+
+        return ResponseEntity.ok().body(cart);
     }
 }
 
 @Data
 class CartRequest {
-    private int user;
     private int product;
     private int quantity;
 }
@@ -101,5 +106,5 @@ class CartRequest {
 class UpdateCartRequest {
     private int id;
     private int quantity;
-    private boolean isCheckout;
+    private boolean checkout;
 }
